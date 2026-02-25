@@ -1,5 +1,6 @@
 use crate::channels::{
-    Channel, DiscordChannel, MattermostChannel, SendMessage, SlackChannel, TelegramChannel,
+    Channel, DingTalkChannel, DiscordChannel, MattermostChannel, SendMessage, SlackChannel,
+    TelegramChannel,
 };
 use crate::config::Config;
 use crate::cron::{
@@ -360,6 +361,19 @@ pub(crate) async fn deliver_announcement(
                 mm.allowed_users.clone(),
                 mm.thread_replies.unwrap_or(true),
                 mm.mention_only.unwrap_or(false),
+            );
+            channel.send(&SendMessage::new(output, target)).await?;
+        }
+        "dingtalk" => {
+            let dt = config
+                .channels_config
+                .dingtalk
+                .as_ref()
+                .ok_or_else(|| anyhow::anyhow!("dingtalk channel not configured"))?;
+            let channel = DingTalkChannel::new(
+                dt.client_id.clone(),
+                dt.client_secret.clone(),
+                dt.allowed_users.clone(),
             );
             channel.send(&SendMessage::new(output, target)).await?;
         }
